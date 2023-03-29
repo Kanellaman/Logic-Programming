@@ -1,15 +1,14 @@
-pancakes_ids(State1,Operators,States) :-
+pancakes_ids(State1,Operators,States,K) :-
     length(State1,N),
     create_list(N,L),
     reverse(L,RL),
-    solve_ids(State1,States,Operators,RL,0).
+    solve_ids(State1,States,Operators,RL,0,K).
 
-solve_ids(State, States, Operators,L,Lim) :-
+solve_ids(State, States, Operators,L,Lim,K) :-
     idfs(State, [State], States, [], Operators, L, Lim),!.
-
-solve_ids(State, States, Operators, L, Lim) :-
+solve_ids(State, States, Operators, L, Lim,K) :-
     Lim1 is Lim + 1,
-    solve_ids(State, States, Operators, L, Lim1).
+    solve_ids(State, States, Operators, L, Lim1,K),writeln(K).
 
 idfs(State, States, States, Operators, Operators,L,Lim):-
     are_same(L,State).

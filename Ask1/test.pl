@@ -23,3 +23,15 @@ em([X1|Y1],S,N,[X1|A]):-
     writeln(X1),
     em(Y1,S,N1,A),!.
 
+flatten([], []) :- !.
+flatten([X|L], F) :- !,
+    flatten(X, FX),
+    flatten(L, FL),
+    append(FX, FL, F).
+flatten(X, [X]).
+
+intersection([],_,[]).
+intersection([X|L1],L2,[X|L]) :-
+    member(X,L2),
+    intersection(L1,L2,L).
+intersection([_|L1],L2,L):-intersection(L1,L2,L).

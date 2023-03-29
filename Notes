@@ -1,0 +1,1 @@
+findall(States,pancakes_dfs([3, 2, 4, 1], Operators, States),Solutions),length(Solutions,N).

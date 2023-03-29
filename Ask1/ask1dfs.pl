@@ -2,16 +2,16 @@ pancakes_dfs(State1,Operators,States) :-
     length(State1,N),
     create_list(N,L),
     reverse(L,RL),
-    dfs(State1,[State1],States,[],Operators,RL).
+    dfs(State1, [State1], States,[], Operators, RL).
 
-dfs(State, States, States, Operators, Operators,L) :-
+dfs(State, States, States, Operators, Operators, L) :-
     are_same(L,State).
-dfs(State1, SoFarStates, States,SoFarOperators, Operators,L) :-
-   move(State1, State2,S),
+dfs(State1, SoFarStates, States, SoFarOperators, Operators, L) :-
+   move(State1, State2, S),
    \+ member(State2, SoFarStates),
    append(SoFarStates, [State2], NewSoFarStates),
-   append(SoFarOperators,[S],NewSoFarOperators),
-   dfs(State2, NewSoFarStates, States,NewSoFarOperators,Operators,L).
+   append(SoFarOperators, [S], NewSoFarOperators),
+   dfs(State2, NewSoFarStates, States, NewSoFarOperators, Operators, L).
 
 
 move(State,NewState,S):-

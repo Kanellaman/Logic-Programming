@@ -5,7 +5,7 @@ pancakes_ids(State1,Operators,States) :-
     solve_ids(State1,States,Operators,RL,0).
 
 solve_ids(State, States, Operators,L,Lim) :-
-    idfs(State, [State], States, [], Operators,L,Lim).
+    idfs(State, [State], States, [], Operators,L,Lim),!.
 
 solve_ids(State, States, Operators,L,Lim) :-
     Lim1 is Lim + 1,

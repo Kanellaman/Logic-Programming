@@ -20,19 +20,19 @@ move(State,NewState,S):-
     kane(State,NewState,S).
 
 kane(State,NewState,S):-
-    em(State,S,ToFlip),
-    append(ToFlip,[S],Flip),
-    reverse(Flip,Flipped),
-    em1(State,S,NoFlipped),
-    append(Flipped,NoFlipped,NewState).
+    length(State,N),
+    L is N-S+2,
+    reverse(State,RState),
+    em(State,L,N,New1),
+    em(RState,S,N,New2),
+    append(New1,New2,NewState).
 
-em([X|Y],X,[]).
-em([X|Y],S,[X|A]):-
-    em(Y,S,A).
-
-em1([X|Y],X,Y).
-em1([X|Y],S,A):-
-    em1(Y,S,A).
+em(_,S,N,[]) :-
+    S > N.
+em([X1|Y1],S,N,[X1|A]):-
+    N1 is N - 1,
+    S =< N,
+    em(Y1,S,N1,A),!.
 
 create_list(1, [1]).
 create_list(N, [N|Rest]) :-

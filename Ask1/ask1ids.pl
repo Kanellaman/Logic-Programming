@@ -1,14 +1,14 @@
-pancakes_ids(State1,Operators,States,K) :-
+pancakes_ids(State1,Operators,States) :-
     length(State1,N),
     create_list(N,L),
     reverse(L,RL),
-    solve_ids(State1,States,Operators,RL,0,K).
+    solve_ids(State1,States,Operators,RL,0).
 
-solve_ids(State, States, Operators,L,Lim,K) :-
+solve_ids(State, States, Operators,L,Lim) :-
     idfs(State, [State], States, [], Operators, L, Lim),!.
-solve_ids(State, States, Operators, L, Lim,K) :-
+solve_ids(State, States, Operators, L, Lim) :-
     Lim1 is Lim + 1,
-    solve_ids(State, States, Operators, L, Lim1,K),writeln(K).
+    solve_ids(State, States, Operators, L, Lim1).
 
 idfs(State, States, States, Operators, Operators,L,Lim):-
     are_same(L,State).
@@ -22,24 +22,23 @@ idfs(State1, SoFarStates, States, SoFarOperators, Operators,L,Lim) :-
    idfs(State2, NewSoFarStates, States,NewSoFarOperators,Operators,L,Lim1).
 
 move(State,NewState,S):-
-    length(State,N),
-    between(1,N,S),
+    member(S,State),
     kane(State,NewState,S).
 
 kane(State,NewState,S):-
-    length(State,N),
-    L is N-S+2,
-    reverse(State,RState),
-    em(State,L,N,New1),
-    em(RState,S,N,New2),
-    append(New1,New2,NewState).
+    em(State,S,ToFlip),
+    append(ToFlip,[S],Flip),
+    reverse(Flip,Flipped),
+    em1(State,S,NoFlipped),
+    append(Flipped,NoFlipped,NewState).
 
-em(_,S,N,[]) :-
-    S > N.
-em([X1|Y1],S,N,[X1|A]):-
-    N1 is N - 1,
-    S =< N,
-    em(Y1,S,N1,A),!.
+em([X1|Y1],X1,[]).
+em([X1|Y1],S,[X1|A]):-
+    em(Y1,S,A).
+
+em1([X1|Y1],X1,Y1).
+em1([X1|Y1],S,A):-
+    em1(Y1,S,A).
 
 create_list(1, [1]).
 create_list(N, [N|Rest]) :-

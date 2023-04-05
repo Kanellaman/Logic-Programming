@@ -15,15 +15,29 @@ activity(a14, act(18,20)).
 activity(a15, act(19,20)).
 
 assignment(NP, MT, ASP, ASA) :-
-    AIds = [a01, a02, a03, a04, a05, a06, a07, a08, a09, a10, a11, a12, a13, a14, a15]
-    assign(AIds, NP, ASA).
-assign([], _, []).
-assign([AId|AIds], NP, [AId-PId|ASA]) :-
-    assign(AIds, NP, ASA),
+    AIds = [a01, a02, a03, a04, a05, a06, a07, a08, a09, a10, a11, a12, a13, a14, a15],
+    assign(AIds, NP, ASA, MT).
+
+assign([], _, [], MT).
+assign([AId|AIds], NP, [AId-PId|ASA], MT) :-
+    assign(AIds, NP, ASA, MT),
     between(1,NP,PId),
     activity(AId, act(Ab, Ae)),
-    append(ASA,[AId],APIds),
-    valid(Ab, Ae, APIds).
-valid(_, _, []).
-valid(Ab1, Ae1, [APId|APIds]) :-
+    findall(APId, (member(APId, AIds), APId \= AId, member(APId-PId, ASA)), APIds),
+    MT1 is MT - (Ae - Ab),
+    valid(Ab, Ae, APIds, MT1).
+
+valid(_, _, [], _).
+valid(Ab1, Ae1, [APId|APIds], MT) :-
     activity(APId, act(Ab2, Ae2)),
+    MT1 is MT - (Ae2 - Ab2),
+    MT1 >= 0,
+    (Ab1 > Ae2; Ae1 < Ab2),
+    valid(Ab1, Ae1, APIds, MT1).
+
+between(L,U,L):-
+    L =< U.
+between(L,U,X):-
+    L < U,
+    L1 is L + 1,
+    between(L1,U,X).  

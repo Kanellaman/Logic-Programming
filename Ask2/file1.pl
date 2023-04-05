@@ -15,7 +15,7 @@ activity(a14, act(18,20)).
 activity(a15, act(19,20)).
 
 assignment(NP, MT, ASP, ASA) :-
-    AIds = [a01, a02, a03, a04, a05, a06, a07, a08, a09, a10, a11, a12, a13, a14, a15],
+    findall(AId, activity(AId, _), AIds),
     assign(AIds, NP, ASA, MT).
 
 assign([], _, [], MT).

@@ -6,18 +6,21 @@ black(4,3).
 black(5,1).
 black(5,5).
 words([adam,al,as,do,ik,lis,ma,oker,ore,pirus,po,so,ur]).
-crossword(Crossword,D,F,Is):-
+crossword(Crossword,D,SolDom,Is):-
+    dimension(Dim),
+    cross(Dim,Crossword),
+    fill(Crossword,1),
     words(X),
     length(X,N),
     length(D,N),
     domain(D,X),
-    dimension(Dim),
-    cross(Dim,Crossword),
-    fill(Crossword,1),
-    % get(1,1,2,D,El),
-    cross(Dim,F),
+    cross(Dim,SolDom),
     findall(1, between(1, Dim, _), Is),
-    dom(1,1,Is,1,Crossword,F,Crossword,D,_).
+    dom(1,1,Is,1,Crossword,SolDom,Crossword,D,_).
+
+cross(N,L):-    % Make 2dimensional List to represent crossword
+    length(L,N),
+    subL(N,L).
 
 domain(_,[]).
 domain([H|T],[Head|Tail]):-
@@ -51,10 +54,6 @@ is_var(I,J,[Row|Rest],N,El):-
 
 is_var(J,[Elem|Rest],N,Elem):-
     (N = J -> (var(Elem) -> true; false); New is N + 1,is_var(J,Rest,New,Elem)).
-
-cross(N,L):-    % Make 2dimensional List to represent crossword
-    length(L,N),
-    subL(N,L).
 
 subL(_,[]).
 subL(N,[X|L]):-

@@ -48,13 +48,6 @@ dom(J,[I|Is],JN,[Elem|Rest],[Elem - I - JN - Dom|R],L,D,[IN|IsN]):-
     Jnew is J + 1,
     dom(Jnew,Is,JN2,Rest,R,L,D,IsN).
 
-is_var(I,J,[Row|Rest],N,El):-
-    (N = I -> is_var(J,Row,1,El);
-    New is N + 1, is_var(I,J,Rest,New,El)).
-
-is_var(J,[Elem|Rest],N,Elem):-
-    (N = J -> (var(Elem) -> true; false); New is N + 1,is_var(J,Rest,New,Elem)).
-
 subL(_,[]).
 subL(N,[X|L]):-
     length(X,N),
@@ -82,9 +75,6 @@ printrow([Head|Tail]):-
     (var(Head) ->  write(' '),write(Head),write(' ');write('###')),
     printrow(Tail).
 
-member_2d(X, [Row|Rest]) :-
-    member(X, Row);
-    member_2d(X, Rest).
 
 
 
@@ -118,3 +108,19 @@ noattack(X/Y, [X1/Y1|Others]) :-
    Y1-Y =\= X1-X,
    Y1-Y =\= X-X1,
    noattack(X/Y, Others).
+
+
+
+
+% trash?
+is_var(I,J,[Row|Rest],N,El):-
+    (N = I -> is_var(J,Row,1,El);
+    New is N + 1, is_var(I,J,Rest,New,El)).
+
+is_var(J,[Elem|Rest],N,Elem):-
+    (N = J -> (var(Elem) -> true; false); New is N + 1,is_var(J,Rest,New,Elem)).
+
+
+member_2d(X, [Row|Rest]) :-
+    member(X, Row);
+    member_2d(X, Rest).

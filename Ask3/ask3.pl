@@ -6,7 +6,7 @@ black(4,3).
 black(5,1).
 black(5,5).
 words([adam,al,as,do,ik,lis,ma,oker,ore,pirus,po,so,ur]).
-crossword(Crossword,D,SolDom,Is):-
+crossword(Crossword,D,SolDom):-
     dimension(Dim),
     cross(Dim,Crossword),
     fill(Crossword,1),
@@ -14,14 +14,40 @@ crossword(Crossword,D,SolDom,Is):-
     length(X,N),
     length(D,N),
     domain(D,X),
-    cross(Dim,SolDom),
+    cross(Dim,SolDom1),
     findall(1, between(1, Dim, _), Is),
-    dom(1,1,Is,1,Crossword,SolDom,Crossword,D,_).
+    dom(1,1,Is,1,Crossword,SolDom1,Crossword,D,_),
+    flatten_2d_list(SolDom1,SolDom),
+    generate(SolDom).
+
+generate([]).
+generate([X-I-J-Domain|SolDom1]):-
+    (var(X)->member(X,Domain);true),
+    updates(X,I,J,SolDom1,SolDom2),
+    generate(SolDom2).
+
+updates(_,_,_,[],[]).
+updates(X,I1,J1,[Y-I-J-Domain1|SolDom1],[Y-I-J-Domain2|SolDom2]):-
+    update(X,I1,I,Domain1,Domain2),
+    update(X,J1,J,Domain1,Domain2),
+    updates(X,I1,J1,SolDom1,SolDom2).
+
+update(X,I,I,Domain1,Domain2):-
+    remove_if_exists(X, Domain1, Domain2).
+update(X,I,I1,Domain1,Domain1).
+
+remove_if_exists(_, [], []).
+remove_if_exists(X, [X|List], List) :-!.
+remove_if_exists(X, [Y|List1], [Y|List2]) :-
+   remove_if_exists(X, List1, List2).
 
 cross(N,L):-    % Make 2dimensional List to represent crossword
     length(L,N),
     subL(N,L).
-
+flatten_2d_list([], []).
+flatten_2d_list([X|Xs], FlatList) :-
+    flatten_2d_list(Xs, Rest),
+    append(X, Rest, FlatList).
 domain(_,[]).
 domain([H|T],[Head|Tail]):-
     domain(T,Tail),
@@ -35,7 +61,7 @@ get(I,J,N,[Row|Rest],El):-
     
 get(J,N,[Head|Tail],El):-
     (J = N -> El is Head; Jnew is J + 1,get(Jnew,N,Tail,El)).
-    
+
 dom(_,_,_,_,[],_,_,_,_).
 dom(I,J,Is,JN,[Head|Tail],[H|T],L,D,_):- % 1,1,1,1
     dom(J,Is,1,Head,H,L,D,IsN),
@@ -43,7 +69,7 @@ dom(I,J,Is,JN,[Head|Tail],[H|T],L,D,_):- % 1,1,1,1
 dom(Inew,J,IsN,JN,Tail,T,L,D,_).
 
 dom(_,_,_,[],_,_,_,_).
-dom(J,[I|Is],JN,[Elem|Rest],[Elem - I - JN - Dom|R],L,D,[IN|IsN]):-
+dom(J,[I|Is],JN,[Elem|Rest],[Elem-I-JN-Dom|R],L,D,[IN|IsN]):-
     (var(Elem) -> (I=JN ->findall(X,get(1,1,JN,D,X),Dom);findall(Y,get(1,1,I,D,Y);get(1,1,JN,D,Y),Dom)),JN2 is JN + 1,IN is I +1 ; IN is 1,JN2 is 1, Dom= [] ),
     Jnew is J + 1,
     dom(Jnew,Is,JN2,Rest,R,L,D,IsN).
@@ -72,10 +98,13 @@ print2d([Head|Tail]):-
     print2d(Tail).
 printrow([]).
 printrow([Head|Tail]):-
-    (var(Head) ->  write(' '),write(Head),write(' ');write('###')),
+    (Head is -1 -> write('###');write(' '),put(Head),write(' ')),
     printrow(Tail).
 
-
+copy([],[]).
+copy([H1|T1], [H2|T2]):-
+    H2 is H1,
+    copy(T1,T2).
 
 
 

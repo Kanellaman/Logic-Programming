@@ -1,0 +1,8 @@
+I=JN ->findall(X,get(1,1,JN,D,X),Dom);
+    findall(Y,get(1,1,I,D,Y),Dom1),findall(Y,get(1,1,JN,D,Y),Dom2),
+    length(Dom1,N1),
+    length(Dom2,N2),
+    intersection(Dom1,Dom2,Dom)
+
+mrv_var(SolDom1,X-Doms,SolDom2),
+

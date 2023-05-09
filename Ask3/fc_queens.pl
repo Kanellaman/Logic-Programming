@@ -1,4 +1,4 @@
-fc_nqueens(N, Queens) :-
+fc_nqueens(N, Queens,SolDom) :-
    length(Queens, N),
    make_domain(N, Domain),
    combine_soldom(Queens, 1, Domain, SolDom),

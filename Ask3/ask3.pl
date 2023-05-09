@@ -6,7 +6,7 @@ black(4,3).
 black(5,1).
 black(5,5).
 words([adam,al,as,do,ik,lis,ma,oker,ore,pirus,po,so,ur]).
-crossword(Crossword,D,SolDom):-
+crossword(Crossword,D,SolDom,Test):-
     dimension(Dim),
     cross(Dim,Crossword),
     fill(Crossword,1),
@@ -18,23 +18,21 @@ crossword(Crossword,D,SolDom):-
     findall(1, between(1, Dim, _), Is),
     dom(1,1,Is,1,Crossword,SolDom1,Crossword,D,_),
     flatten_2d_list(SolDom1,SolDom),
+%    findall(Y-I-J-Domain,(member(Y-I-J-Domain,SolDom),\+empty(Domain)),Test),
     generate(SolDom).
-
+empty([]).
 generate([]).
 generate([X-I-J-Domain|SolDom1]):-
-    (var(X)->member(X,Domain);true),
-    updates(X,I,J,SolDom1,SolDom2),
-    generate(SolDom2).
+    (var(X)->member(X,Domain),updates(X,SolDom1,SolDom2),generate(SolDom2);generate(SolDom1)).
+    %(var(X)->member(X,Domain);true),generate(SolDom1).
+    %member(X,Domain),updates(X,SolDom1,SolDom2),generate(SolDom2).
+updates(_,[],[]).
+updates(X,[Y-I-J-Domain1|SolDom1],[Y-I-J-Domain2|SolDom2]):-
+    update(X,Domain1,Domain2),
+    updates(X,SolDom1,SolDom2).
 
-updates(_,_,_,[],[]).
-updates(X,I1,J1,[Y-I-J-Domain1|SolDom1],[Y-I-J-Domain2|SolDom2]):-
-    update(X,I1,I,Domain1,Domain2),
-    update(X,J1,J,Domain1,Domain2),
-    updates(X,I1,J1,SolDom1,SolDom2).
-
-update(X,I,I,Domain1,Domain2):-
+update(X,Domain1,Domain2):-
     remove_if_exists(X, Domain1, Domain2).
-update(X,I,I1,Domain1,Domain1).
 
 remove_if_exists(_, [], []).
 remove_if_exists(X, [X|List], List) :-!.
@@ -44,6 +42,9 @@ remove_if_exists(X, [Y|List1], [Y|List2]) :-
 cross(N,L):-    % Make 2dimensional List to represent crossword
     length(L,N),
     subL(N,L).
+member_2d(X, [Row|Rest]) :-
+    member(X, Row);
+    member_2d(X, Rest).
 flatten_2d_list([], []).
 flatten_2d_list([X|Xs], FlatList) :-
     flatten_2d_list(Xs, Rest),
@@ -70,10 +71,12 @@ dom(Inew,J,IsN,JN,Tail,T,L,D,_).
 
 dom(_,_,_,[],_,_,_,_).
 dom(J,[I|Is],JN,[Elem|Rest],[Elem-I-JN-Dom|R],L,D,[IN|IsN]):-
-    (var(Elem) -> (I=JN ->findall(X,get(1,1,JN,D,X),Dom);findall(Y,get(1,1,I,D,Y);get(1,1,JN,D,Y),Dom)),JN2 is JN + 1,IN is I +1 ; IN is 1,JN2 is 1, Dom= [] ),
+    (var(Elem) -> 
+    (findall(X,member_2d(X,D),Dom)),JN2 is JN + 1,IN is I + 1 ;
+    IN is 1,JN2 is 1, Dom= []),
     Jnew is J + 1,
     dom(Jnew,Is,JN2,Rest,R,L,D,IsN).
-
+%(N1<N2->copy(Dom1,Dom);copy(Dom2,Dom))
 subL(_,[]).
 subL(N,[X|L]):-
     length(X,N),
@@ -88,9 +91,8 @@ fill([Row|Rest],N) :-
 fill([],_,_).
 fill([Elem|Rest],I,N) :-
     New is N + 1,
-    (black(I,N)-> Elem is -1;true),
+    (black(I,N)-> Elem = -1 ;true),
     fill(Rest,I,New).
-
 print2d([]).
 print2d([Head|Tail]):-
     printrow(Head),
@@ -98,58 +100,25 @@ print2d([Head|Tail]):-
     print2d(Tail).
 printrow([]).
 printrow([Head|Tail]):-
-    (Head is -1 -> write('###');write(' '),put(Head),write(' ')),
+%    (\+ var(Head) -> write('###');write(' '),write(Head),write(' ')),
+   (Head = -1 -> write('###');write(' '),put(Head),write(' ')),
     printrow(Tail).
 
 copy([],[]).
 copy([H1|T1], [H2|T2]):-
     H2 is H1,
     copy(T1,T2).
-
-
-
-bt_nqueens(N, Queens) :-
-   make_tmpl(1, N, Queens),
-   solution(N, Queens).
-
-make_tmpl(N, N, [N/_]).
-make_tmpl(I, N, [I/_|Rest]) :-
-   I < N,
-   I1 is I+1,
-   make_tmpl(I1, N, Rest).
-
-solution(_, []).
-solution(N, [X/Y|Others]) :-
-   solution(N, Others),
-   between(1, N, Y),
-   noattack(X/Y, Others).
-
+pr([]).
+pr([_-_-_-Dom|Rem]):-
+    prin(Dom),
+    write('\n'),
+    pr(Rem).
+prin([]).
+prin([Head|Rem]):-
+    put(Head),write(' '),prin(Rem).
 between(I, J, I) :-
    I =< J.
 between(I, J, X) :-
    I < J,
    I1 is I+1,
    between(I1, J, X).
-
-noattack(_, []).
-noattack(X/Y, [X1/Y1|Others]) :-
-   Y =\= Y1,
-   Y1-Y =\= X1-X,
-   Y1-Y =\= X-X1,
-   noattack(X/Y, Others).
-
-
-
-
-% trash?
-is_var(I,J,[Row|Rest],N,El):-
-    (N = I -> is_var(J,Row,1,El);
-    New is N + 1, is_var(I,J,Rest,New,El)).
-
-is_var(J,[Elem|Rest],N,Elem):-
-    (N = J -> (var(Elem) -> true; false); New is N + 1,is_var(J,Rest,New,Elem)).
-
-
-member_2d(X, [Row|Rest]) :-
-    member(X, Row);
-    member_2d(X, Rest).

@@ -51,35 +51,33 @@ mrv_var([X1-Pos1-Doms1|SolDom1],X-Pos-Doms,SolDom3):-
 
 updates1(_, _, [], []).
 updates1(X, PosX, [Y - PosY - Domain1|SolDom1], [Y - PosY - Domain3|SolDom2]) :-
-   remove_if_exists(X,Domain1,Domain2),
-   (mem(I-J,PosX,X,Elem),position(I-J,PosY,1,P),length(Y,N),P=<N ->
-   mem2d(Elem, P, Domain2, [], Domain3);
-   copy(Domain2,[],Domain3)),
+   remove_if_exists(X,Domain1,Domain2),     % Update all words' domains
+   (mem(I-J,PosX,X,Elem),position(I-J,PosY,1,P),length(Y,N),P=<N ->     % Update all vertical words' domains
+   mem2d(Elem, P, Domain2, [], Domain3);    % Delete words that dont match the letter Elem (at position P)
+   copy(Domain2,[],Domain3)),       % If PosX and PosY have not common veriables just copy the elements of Domains2 to Domains3
    updates1(X, PosX, SolDom1, SolDom2).
 
-
-
-mem(I-J,[I-J|_],[Elem|_],Elem).  % Find the 
+mem(I-J,[I-J|_],[Elem|_],Elem).  % Find the elemnt at the I-J position of the crossword
 mem(I-J,[_-_|Rest],[_|Tail],Elem):-
     mem(I-J,Rest,Tail,Elem).
 
-position(I-J,[I-J|_],Pos,Pos):-!.
+position(I-J,[I-J|_],Pos,Pos):-!.   % Find the postition of I,Jth element in the List
 position(I-J,[_|T],CurrentPos,Pos):-
     NewPos is CurrentPos + 1,
     position(I-J,T,NewPos,Pos).
 
 mem2d(_, _, [], SoFar, SoFar).
 mem2d(X, J, [Row|Rest], SoFar, Dom) :-
-    (tr(X, J, Row,1) -> mem2d(X, J, Rest, SoFar, Dom); 
+    (del(X, J, Row,1) -> mem2d(X, J, Rest, SoFar, Dom); 
     append(SoFar, [Row], New),
     mem2d(X, J, Rest, New, Dom)).
 
-tr(_, _, [], _):- fail.
-tr(X, J, [Elem|Rest],N):-
+del(_, _, [], _):- fail.
+del(X, J, [Elem|Rest],N):-
     (J=N ,X\=Elem -> true;
         (J=N->fail;
         New is N + 1,
-        tr(X,J,Rest,New))),!.
+        del(X,J,Rest,New))),!.
 
 copy([],Copy,Copy). % Copy all elements of a list to an other
 copy([H1|T1],SoFar,Copy):-

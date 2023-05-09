@@ -1,13 +1,12 @@
-:-compile(cross10).
 crossword(Res):-
     preprocessign(Crossword,Domains,Horizontal,Vertical),
     append(Horizontal,Vertical,Total), 
     doms(Total,SolDom,Domains), % SolDom contains all variables with their domains
-    generatehor(SolDom),!, % Find the solution
+    generate(SolDom),!, % Find the solution
     result(SolDom,Res), % Store the solution in a readable list
     print2d(Crossword). % Print the crossword
 
-preprocessign(Crossword,Domains,Horizontal,Vertical):-
+preprocessign(Crossword,Domains,Horizontal,Vertical):- 
     dimension(Dim),
     cross(Dim,Crossword),
     fill(Crossword,1),
@@ -15,9 +14,9 @@ preprocessign(Crossword,Domains,Horizontal,Vertical):-
     length(X,N),
     length(Domains,N),
     domain(Domains,X),
-    ela(Crossword,[],Horizontal),
-    transpose(Crossword,New),
-    ela(New,[],Vertical).
+    ela(Crossword,[],Horizontal),   % Get all the horizontal words
+    transpose(Crossword,New),   % Transpose the crossword so that we can get the vertical words
+    ela(New,[],Vertical).   % Get all the vertical words
 
 doms([],[],_).
 doms([L-Z|Rest],[L-Z-Dom|R],D):-
@@ -25,12 +24,12 @@ doms([L-Z|Rest],[L-Z-Dom|R],D):-
     findall(X,(member(X,D),length(X,NX),N=NX),Dom),
     doms(Rest,R,D).
 
-generatehor([]):-!.
-generatehor(SolDom1):-
+generate([]):-!.
+generate(SolDom1):-
     mrv_var(SolDom1,X - Pos - Doms,SolDom2),
     member(X,Doms),
     updates1(X, Pos, SolDom2, SolDom3),
-    generatehor(SolDom3).
+    generate(SolDom3).
 
 mrv_var([X-Pos-Doms],X-Pos-Doms,[]).
 mrv_var([X1-Pos1-Doms1|SolDom1],X-Pos-Doms,SolDom3):-
@@ -38,7 +37,7 @@ mrv_var([X1-Pos1-Doms1|SolDom1],X-Pos-Doms,SolDom3):-
     length(Doms1,N1),
     length(Doms2,N2),
     ((N1 < N2 ; (N1=N2,
-    length(X1,N3),
+    length(X1,N3),  % Perform mc
     length(X2,N4),N3>N4))->
 %    (N1 < N2 ->
     (X = X1,
@@ -53,19 +52,18 @@ mrv_var([X1-Pos1-Doms1|SolDom1],X-Pos-Doms,SolDom3):-
 updates1(_, _, [], []).
 updates1(X, PosX, [Y - PosY - Domain1|SolDom1], [Y - PosY - Domain3|SolDom2]) :-
    remove_if_exists(X,Domain1,Domain2),
-   (mem(I-J,PosX,X,Elem,1),position(I-J,PosY,1,P),length(Y,N),P=<N ->
+   (mem(I-J,PosX,X,Elem),position(I-J,PosY,1,P),length(Y,N),P=<N ->
    mem2d(Elem, P, Domain2, [], Domain3);
    copy(Domain2,[],Domain3)),
    updates1(X, PosX, SolDom1, SolDom2).
 
 
 
-mem(I-J,[I-J|Rest],[Elem|Tail],Elem,Position).
-mem(I-J,[_-_|Rest],[_|Tail],Elem,CurrentPos):-
-    NewPosition is CurrentPos + 1,
-    mem(I-J,Rest,Tail,Elem,NewPosition).
+mem(I-J,[I-J|_],[Elem|_],Elem).  % Find the 
+mem(I-J,[_-_|Rest],[_|Tail],Elem):-
+    mem(I-J,Rest,Tail,Elem).
 
-position(I-J,[I-J|T],Pos,Pos):-!.
+position(I-J,[I-J|_],Pos,Pos):-!.
 position(I-J,[_|T],CurrentPos,Pos):-
     NewPos is CurrentPos + 1,
     position(I-J,T,NewPos,Pos).
@@ -83,7 +81,7 @@ tr(X, J, [Elem|Rest],N):-
         New is N + 1,
         tr(X,J,Rest,New))),!.
 
-copy([],Copy,Copy).
+copy([],Copy,Copy). % Copy all elements of a list to an other
 copy([H1|T1],SoFar,Copy):-
     append(SoFar,[H1],New),
     copy(T1,New,Copy).
@@ -123,7 +121,7 @@ separate(L,SoFarWords,Words):-
     separate(Sec,New,Words)).
 
 separate_list([], [], [],[]).   % Separate a list when ###(non variable) is found
-separate_list([X-I-J|Rest], [], [], Rest):-
+separate_list([X-_-_|Rest], [], [], Rest):-
     \+var(X).
 separate_list([X-I-J|Rest], [X|Before], [I-J|Bef], After) :-
     var(X),

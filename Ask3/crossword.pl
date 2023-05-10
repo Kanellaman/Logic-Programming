@@ -159,6 +159,5 @@ print2d([Head|Tail]):-
     print2d(Tail).
 printrow([]).
 printrow([Head-_-_|Tail]):-
-%    (\+ var(Head) -> write('###');write(' '),write(Head),write(' ')),
    (Head = ### -> write(Head);write(' '),put(Head),write(' ')),
     printrow(Tail).

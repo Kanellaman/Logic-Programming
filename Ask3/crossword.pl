@@ -1,3 +1,4 @@
+:-compile(cross11).
 crossword(Res):-
     preprocessign(Crossword,Domains,Horizontal,Vertical),
     append(Horizontal,Vertical,Total), 
@@ -54,7 +55,7 @@ updates1(X, PosX, [Y - PosY - Domain1|SolDom1], [Y - PosY - Domain3|SolDom2]) :-
    remove_if_exists(X,Domain1,Domain2),     % Update all words' domains
    (mem(I-J,PosX,X,Elem),position(I-J,PosY,1,P),length(Y,N),P=<N ->     % Update all vertical words' domains
    mem2d(Elem, P, Domain2, [], Domain3);    % Delete words that dont match the letter Elem (at position P)
-   copy(Domain2,[],Domain3)),       % If PosX and PosY have not common veriables just copy the elements of Domains2 to Domains3
+   Domain3=Domain2),       % If PosX and PosY have not common veriables just copy the elements of Domains2 to Domains3
    updates1(X, PosX, SolDom1, SolDom2).
 
 mem(I-J,[I-J|_],[Elem|_],Elem).  % Find the elemnt at the I-J position of the crossword
@@ -79,10 +80,6 @@ del(X, J, [Elem|Rest],N):-
         New is N + 1,
         del(X,J,Rest,New))),!.
 
-copy([],Copy,Copy). % Copy all elements of a list to an other
-copy([H1|T1],SoFar,Copy):-
-    append(SoFar,[H1],New),
-    copy(T1,New,Copy).
 remove_if_exists(_, [], []).
 remove_if_exists(X, [X|List], List) :-
    !.
@@ -107,7 +104,12 @@ ela([Head|Rest],SoFarWords,Words):-
     row(Head,[],Sec),
     append(SoFarWords,Sec,New),
     ela(Rest,New,Words).
-
+row([],SoFarWords,SoFarWords):-!.
+row(L,SoFarWords,Words):-
+    separate_list(L,One,Half,Sec),
+    (empty(One)->row(Sec,SoFarWords,Words);
+    append(SoFarWords,[One-Half],New),
+    row(Sec,New,Words)).
 empty([]).
 empty(X):-length(X,1).
 

@@ -1,4 +1,3 @@
-:-compile(cross11).
 crossword(Res):-
     preprocessign(Crossword,Domains,Horizontal,Vertical),
     append(Horizontal,Vertical,Total), 

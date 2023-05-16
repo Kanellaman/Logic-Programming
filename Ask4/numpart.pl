@@ -6,7 +6,7 @@ numpart(N, L1, L2):-
     length(L1,New),
     L1 #:: 1..N,
     constrains(L1,N),
-search(L1, 0, occurence, indomain_middle, complete, [search_optimization(true)]),
+    search(L1, 0, occurence, indomain_middle, complete, [search_optimization(true)]),
     findall(X,(between(1,N,X),\+member(X,L1)),L2).
 
 constrains(L1,N):-

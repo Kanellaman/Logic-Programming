@@ -1,0 +1,1 @@
+compile(main),seed(1000), maxsat(40, 120, 10, F, S, M).

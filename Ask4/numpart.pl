@@ -1,4 +1,4 @@
-w:- lib(ic_global).
+:- lib(ic_global).
 :- lib(ic).
 :- import alldifferent/1 from ic.
 numpart(N, L1, L2):-

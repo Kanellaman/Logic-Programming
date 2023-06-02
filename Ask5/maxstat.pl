@@ -1,3 +1,4 @@
+:- compile(given).
 :- lib(ic).
 :- lib(branch_and_bound).
 
@@ -11,7 +12,7 @@ maxsat(NV,NC,D,F,S,M):-
    Clauses #:: 0..1,
    exprs(FNew,Clauses,S,Cost),
    M #= NC - Cost,
-   bb_min(search(Clauses, 0, input_order, indomain, complete, [search_optimization(true)]), Cost, bb_options{strategy:dichotomic, from:0}),fill(S),!.
+   bb_min(search(Clauses, 0, input_order, indomain_reverse_split, complete, [search_optimization(true)]), Cost, bb_options{strategy:dichotomic, from:0}),fill(S),!.
 
 fill([]).  % Fill the unassigned values with 0 to avoid late goals 
 fill([X|Rest]):-

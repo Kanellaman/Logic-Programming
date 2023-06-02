@@ -6,7 +6,7 @@
 skyscr(P,Solution):-
     puzzle(P,Dim,L,R,U,D,Solution),
     cross(L,R,U,D,Dim,Solution),
-    search(Solution,0,occurence,indomain,complete,[search_optimization(true)]).
+    search(Solution,0,occurence,indomain,complete,[search_optimization(true)]),!.
 
 transpose([], []).
 transpose([[]|_], []).
@@ -51,18 +51,3 @@ cross(L,R,U,D,Dim,Rows):-    % Make 2dimensional List to represent board
     constraints(L,R,Rows,N),
     transpose(Rows,TRows),
     constraints(U,D,TRows,N).
-
-subL(N,[]).
-subL(N,[X|Rest]):-
-    X #:: 1..N,
-    subL(N,Rest).
-    
-print2d([]).
-print2d([Head|Tail]):-
-    printrow(Head),
-    write('\n'),
-    print2d(Tail).
-printrow([]).
-printrow([Head|Tail]):-
-    write(Head),
-    printrow(Tail).

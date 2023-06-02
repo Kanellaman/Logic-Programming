@@ -48,13 +48,3 @@ subL(N,[]).
 subL(N,[X|Rest]):-
     X #:: 1..N,
     subL(N,Rest).
-
-print2d([]).
-print2d([Head|Tail]):-
-    printrow(Head),
-    write('\n'),
-    print2d(Tail).
-printrow([]).
-printrow([Head|Tail]):-
-    write(Head),
-    printrow(Tail).

@@ -4,9 +4,7 @@
 :- import alldifferent/1 from ic.
 
 skyscr(P,Solution):-
-    puzzle(P,Dim,L,R,U,D,Board),
-    Solution = Board,
-    %fill(Board,1),
+    puzzle(P,Dim,L,R,U,D,Solution),
     cross(L,R,U,D,Dim,Solution),
     search(Solution,0,occurence,indomain,complete,[search_optimization(true)]),!.
 
@@ -50,19 +48,6 @@ subL(N,[]).
 subL(N,[X|Rest]):-
     X #:: 1..N,
     subL(N,Rest).
-
-fill([],_).     % Fill the crossword with i,j positions
-fill([Row|Rest],N):-
-    fill(Row,N,1),
-    New is N + 1,
-    fill(Rest,New).
-
-fill([],_,_).   % Fill each row with i,j position in the crossword
-fill([Elem|Rest],I,N) :-
-    New is N + 1,
-    (var(Elem) ->Elem = _-I-N;
-    true),           % Skip filling if the cell is already filled
-    fill(Rest,I,New).
 
 print2d([]).
 print2d([Head|Tail]):-

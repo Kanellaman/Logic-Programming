@@ -23,14 +23,20 @@ transpose([[X|Xs]|RestMatrix], [X|XValues], [Xs|RestRows]) :-
 constraints([],[],[],_).
 constraints([L|RestL],[R|RestR],[X|Rest],N):-
     alldifferent(X),
-    (L=0,R=0->constraints(RestL,RestR,Rest,N);
-    length(List,N),
-    (L=0->reverse(X,Elements),E#=R;Elements=X,E#=L),
-    writeln(Elements),
-    first(Elements,X1,RestX),
-    visible(List,RestX,[X1],Sum),
-    eval(Sum,E),
-    constraints(RestL,RestR,Rest,N)).
+    length(List1,N),
+    ( L \= 0 -> first(X,X1,RestX),
+    visible(List1,RestX,[X1],Sum1),
+    eval(Sum1,L);
+    true),
+
+    length(List2,N),
+    ( R \= 0 -> reverse(X,RX),
+    first(RX,RX1,RestRX),
+    visible(List2,RestRX,[RX1],Sum2),
+    eval(Sum2,R);
+    true),
+
+    constraints(RestL,RestR,Rest,N).
 
 first([X|Rest],X,Rest).
 
@@ -43,8 +49,6 @@ visible([Y|RestY],[X|RestX],SoFar,Sum):-
 
 cross(L,R,U,D,Dim,Rows):-    % Make 2dimensional List to represent board
     subL(Dim,Rows),
-    print2d(Rows),
-    write('\n'),
     N is Dim - 1,
     constraints(L,R,Rows,N),
     transpose(Rows,TRows),

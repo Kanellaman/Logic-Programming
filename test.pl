@@ -1,27 +1,30 @@
-occur([],L):-!.
-occur([X|T],Cal):-
-    occur(T,NCal).
+add(nil, X, t(nil,X,nil)).
+add(t(L, X, R), X, t(L, X, R)).
+add(t(L, Y, R), X, t(NewL, Y, R)):-
+    X < Y,
+    add(L, X, NewL).
 
-add([X-N|Rest],[X-New|Rest],X):-
-    New is N + 1, !.
-add([X-N|T1],[X-N|T2],Y):-
-   add(T1,T2,Y).
+add(t(L, Y, R), X, t(L, Y, NewR)):-
+    X > Y,
+    add(R, X, NewR).
 
-update([],L,L).
-update([X|T],L,G):-
-    lis(X,L,F),
-    update(T,F,G).
-
-lis([],L,L).
-lis([X|T],L,G):-
-    Elem is abs(X),
-    add(L,F,Elem),
-    lis(T,F,G).
-
-
-between(L,U,L):-
-    L =< U.
-between(L,U,X):-
-    L < U,
-    L1 is L + 1,
-    between(L1,U,X).  
+del(t(nil, X, R), X, R).
+del(t(L, X, nil), X, L).
+del(t(L, X, R), X, t(L, Y, NR)):-
+    delmin(R, Y, NR).
+del(t(L, Y, R), X, t(NewL, Y, R)):-
+    X < Y,
+    del(L, X, NewL).
+del(t(L, Y, R), X, t(L, Y, NewR)):-
+    X > Y,
+    del(R, X, NewR).
+delmin(t(nil, X, R), X, R).
+delmin(t(L, X, R), Y, t(NL, X, R)):-
+    delmin(L, Y, NL).
+addroot(nil, X, t(nil, X, nil)).
+addroot(t(L, Y, R), X, t(L1, X, t(L2, Y, R))) :-
+    X<Y,
+    addroot(L, X, t(L1, X, L2)).
+addroot(t(L, Y, R), X, t(t(L, Y, R1), X, R2)) :-
+    X>Y,
+    addroot(R, X, t(R1, X, R2)).

@@ -13,7 +13,7 @@ assignment_csp(NP,MT,ASP,ASA):-
     /* length(Workers,NP),
     subL(MT,Workers,NP,Flatten),
     alldifferent(Flatten), */
-    search(Assignments,0,most_constrained,indomain,complete,[search_optimization(true)]),!,
+    search(Assignments,0,most_constrained,indomain,complete,[search_optimization(true)]),
     results(AIds,Assignments,ASA),
     makeASP(NP,ASP,0,ASA).
 
@@ -24,7 +24,7 @@ subL(MT,[X|Rest],NP,FLattened):-
     subL(MT,Rest,NP,Flat),
     append(Flat,X,FLattened).
 
-overlap([_|[]],[_|[]],[_|[]]).
+overlap([],[],[]).
 overlap([AId|RestAids],[Var|RestVars],[Duration|RestDurations]):-
     % write(AId),write('       '),
     activity(AId, act(Ab, Ae)),
@@ -47,6 +47,7 @@ results([AId|RestAids],[Var|RestVars],[AId-Var|RestASA]):-
 
 makeASP(NP,[],NP,_).
 makeASP(NP,[New-AIds|Rest],N,ASA):-
+    NP > N,
     New is N + 1,
     findall(AId, (member(Element, ASA), match(New, Element, AId)), AIds),
     makeASP(NP,Rest,New,ASA).

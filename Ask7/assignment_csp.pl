@@ -10,19 +10,9 @@ assignment_csp(NP,MT,ASP,ASA):-
     length(Duration,N),
     Assignments #:: 1..NP,
     overlap(AIds,Assignments,Duration),
-    /* length(Workers,NP),
-    subL(MT,Workers,NP,Flatten),
-    alldifferent(Flatten), */
     search(Assignments,0,most_constrained,indomain,complete,[search_optimization(true)]),
     results(AIds,Assignments,ASA),
     makeASP(NP,ASP,0,ASA).
-
-subL(_,[],_,[]).
-subL(MT,[X|Rest],NP,FLattened):-
-    length(X, NP),
-    X #:: 1..MT,
-    subL(MT,Rest,NP,Flat),
-    append(Flat,X,FLattened).
 
 overlap([],[],[]).
 overlap([AId|RestAids],[Var|RestVars],[Duration|RestDurations]):-

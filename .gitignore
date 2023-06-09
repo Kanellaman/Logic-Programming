@@ -1,0 +1,7 @@
+# Ignoring ALL files (but not Directories)
+*
+!*/
+# Except the following files
+!.gitignore
+!README.md
+!*.pl

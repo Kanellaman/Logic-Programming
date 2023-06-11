@@ -1,7 +1,5 @@
 :- compile(activities).
-:- lib(gfd).
-:- lib(gfd_search).
-:- import search/6 from gfd_search.
+:- lib(ic).
 
 assignment_csp(NP,MT,ASP,ASA):-
     /* Data in Lists */
@@ -13,11 +11,12 @@ assignment_csp(NP,MT,ASP,ASA):-
     /* Constraints */
     Assignments #:: 1..NP,
     overlap(AIds,Assignments,Durations),
-    max_time(NP, Durations, 0, MT),
-
-    search(Assignments,0,most_constrained,indomain,complete,[search_optimization(true)]),
+    max_time(NP, Durations, 0, MT, [], Sums),
+    first(Assignments,First,Rest),
+    symmetric(Rest,[First]),
+    search(Assignments, 0, input_order, indomain, complete, [search_optimization(true)]),
     results(AIds,Assignments,ASA),
-    makeASP(NP,ASP,0,ASA).
+    makeASP(ASP,ASA,Sums).
 
 overlap([],[],[]).
 overlap([AId|RestAids],[Var|RestVars],[Var-Duration|RestDurations]):-
@@ -38,25 +37,29 @@ results([],[],[]).
 results([AId|RestAids],[Var|RestVars],[AId-Var|RestASA]):-
     results(RestAids,RestVars,RestASA).
 
-makeASP(NP,[],NP,_).
-makeASP(NP,[New-AIds|Rest],N,ASA):-
-    NP > N,
-    New is N + 1,
-    findall(AId, (member(Element, ASA), match(New, Element, AId)), AIds),
-    makeASP(NP,Rest,New,ASA).
+makeASP([],_,[]).
+makeASP([N-AIds-Sum|Rest],ASA,[N-Sum|RestSums]):-
+    findall(AId, (member(Element, ASA), match(N, Element, AId)), AIds),
+    makeASP(Rest,ASA,RestSums).
 
 match(Worker, AId-Worker, AId).
 
-max_time(NP, _, NP, _).
-max_time(NP, Durations, N, MT):-
+max_time(NP, _, NP, _, Sums, Sums).
+max_time(NP, Durations, N, MT, SoFar, Sums):-
     NP > N,
     New is N + 1,
     constraints(Durations,New,Sum),
     Sum #< MT + 1,
-    writeln(Sum),
-    max_time(NP, Durations, New, MT).
+    append(SoFar,[New-Sum],S),
+    max_time(NP, Durations, New, MT, S, Sums).
 
 constraints([],_,0).
 constraints([Var-Duration|RestDurations],N,Sum):-
     constraints(RestDurations,N,S),
     Sum #= S + (Var #= N)*Duration.
+
+symmetric([],_).
+symmetric([Var|RestVars],SoFar):-
+    Var #=< max(SoFar) + 1,
+    append(SoFar,[Var],Max),
+    symmetric(RestVars,Max).

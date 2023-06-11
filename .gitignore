@@ -1,5 +1,6 @@
 # Ignoring ALL files (but not Directories)
 *
+test.pl
 !*/
 # Except the following files
 !.gitignore

@@ -23,6 +23,28 @@ assignment_csp(NP, MT, ASP, ASA) :-
     results(AIds, Assignments, ASA),
     makeASP(ASP, ASA, Sums).
 
+assignment_opt(NF, NP, MT, F, T, ASP, ASA, Cost):-
+        /* Data in Lists */
+    findall(AId, activity(AId, _), AIds),
+    findall(Time, (activity(_, act(A,B)), Time is B-A), Durs),
+    sum_list(Durs,D),
+    length(AIds, N),
+    length(Assignments, N),
+    length(Durations, N),
+
+    /* Constraints */
+    Assignments #:: 1..NP,
+    overlap(AIds, Assignments, Durations),
+    max_time(NP, Durations, 0, MT, [], Sums),
+    Assignments= [ First | Rest],
+    First #= 1,
+    symmetric(Rest, [First]),
+
+    /* Search-Solutions */
+    search(Assignments, 0, input_order, indomain, complete, []),
+    results(AIds, Assignments, ASA),
+    makeASP(ASP, ASA, Sums).
+    
 overlap([], [], []).
 overlap([AId|RestAids], [Var|RestVars], [Var-Duration|RestDurations]) :-
     activity(AId, act(Ab, Ae)),
@@ -69,3 +91,8 @@ makeASP([N-AIds-Sum|Rest], ASA, [N-Sum|RestSums]) :-
     makeASP(Rest, ASA, RestSums).
 
 match(Worker, AId-Worker, AId).
+
+sum_list([], 0).
+sum_list([Head|Tail], Sum) :-
+  sum_list(Tail, TailSum),
+  Sum is Head + TailSum.

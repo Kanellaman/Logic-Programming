@@ -14,15 +14,14 @@ assignment_csp(NP, MT, ASP, ASA) :-
     Assignments #:: 1..NP,
     overlap(AIds, Assignments, Durations),
     max_time(NP, Durations, 0, MT, [], Sums),
-    first(Assignments, First, Rest),
+    Assignments= [ First | Rest],
     First #= 1,
     symmetric(Rest, [First]),
-    writeln(Sums),
+
     /* Search-Solutions */
-    search(Assignments, 0, input_order, indomain, complete, [search_optimization(true)]),
+    search(Assignments, 0, input_order, indomain, complete, []),
     results(AIds, Assignments, ASA),
     makeASP(ASP, ASA, Sums).
-first([X|Rest],X,Rest).
 
 overlap([], [], []).
 overlap([AId|RestAids], [Var|RestVars], [Var-Duration|RestDurations]) :-
@@ -39,7 +38,6 @@ check(AId, [X|RestAids], Var, [XVar|RestVars]) :-
     Var #\= XVar),
     check(AId, RestAids, Var, RestVars).
 
-
 max_time(NP, _, N, _, Sums, Sums):-
     N >= NP,!.
 max_time(NP, Durations, N, MT, SoFar, Sums) :-
@@ -49,7 +47,7 @@ max_time(NP, Durations, N, MT, SoFar, Sums) :-
     append(SoFar, [New-Sum], S),
     max_time(NP, Durations, New, MT, S, Sums).
 
-constraints([Var-Duration], _, Sum, S):-
+constraints([Var-Duration], N, Sum, S):-
     S #= Sum + (Var #= N)*Duration.
 constraints([Var-Duration|RestDurations], N, F, S) :-
     Sum #= F + (Var #= N)*Duration,

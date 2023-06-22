@@ -1,5 +1,7 @@
 :- compile(activities).
-:- lib(ic).
+:- lib(gfd).
+:- lib(gfd_search).
+:- import search/6 from gfd_search.
 
 assignment_csp(NP, MT, ASP, ASA) :-
     /* Data in Lists */
@@ -13,8 +15,9 @@ assignment_csp(NP, MT, ASP, ASA) :-
     overlap(AIds, Assignments, Durations),
     max_time(NP, Durations, 0, MT, [], Sums),
     first(Assignments, First, Rest),
+    First #= 1,
     symmetric(Rest, [First]),
-
+    writeln(Sums),
     /* Search-Solutions */
     search(Assignments, 0, input_order, indomain, complete, [search_optimization(true)]),
     results(AIds, Assignments, ASA),
@@ -32,9 +35,31 @@ check(_, [], _, []).
 check(AId, [X|RestAids], Var, [XVar|RestVars]) :-
     activity(AId, act(Ab1, Ae1)),
     activity(X, act(Ab2, Ae2)),
-    ((Ab1 > Ae2; Ae1 < Ab2) -> true;
+    (( Ae2 - Ab1 =< 1; Ab2-Ae1 >= 1) -> true;
     Var #\= XVar),
     check(AId, RestAids, Var, RestVars).
+
+
+max_time(NP, _, N, _, Sums, Sums):-
+    N >= NP,!.
+max_time(NP, Durations, N, MT, SoFar, Sums) :-
+    New is N + 1,
+    constraints(Durations, New, 0, Sum),
+    Sum #=< MT,
+    append(SoFar, [New-Sum], S),
+    max_time(NP, Durations, New, MT, S, Sums).
+
+constraints([Var-Duration], _, Sum, S):-
+    S #= Sum + (Var #= N)*Duration.
+constraints([Var-Duration|RestDurations], N, F, S) :-
+    Sum #= F + (Var #= N)*Duration,
+    constraints(RestDurations, N, Sum, S).
+
+symmetric([], _).
+symmetric([Var|RestVars], SoFar) :-
+    Var #=< max(SoFar) + 1,
+    append(SoFar, [Var], Miax),
+    symmetric(RestVars, Miax).
 
 results([], [], []).
 results([AId|RestAids], [Var|RestVars], [AId-Var|RestASA]) :-
@@ -46,23 +71,3 @@ makeASP([N-AIds-Sum|Rest], ASA, [N-Sum|RestSums]) :-
     makeASP(Rest, ASA, RestSums).
 
 match(Worker, AId-Worker, AId).
-
-max_time(NP, _, NP, _, Sums, Sums).
-max_time(NP, Durations, N, MT, SoFar, Sums) :-
-    NP > N,
-    New is N + 1,
-    constraints(Durations, New, Sum),
-    Sum #< MT + 1,
-    append(SoFar, [New-Sum], S),
-    max_time(NP, Durations, New, MT, S, Sums).
-
-constraints([], _, 0).
-constraints([Var-Duration|RestDurations], N, Sum) :-
-    constraints(RestDurations, N, S),
-    Sum #= S + (Var #= N)*Duration.
-
-symmetric([], _).
-symmetric([Var|RestVars], SoFar) :-
-    Var #=< max(SoFar) + 1,
-    append(SoFar, [Var], Max),
-    symmetric(RestVars, Max).

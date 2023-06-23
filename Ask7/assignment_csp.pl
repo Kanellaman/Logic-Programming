@@ -24,11 +24,18 @@ assignment_csp(NP, MT, ASP, ASA) :-
     makeASP(ASP, ASA, Sums).
 
 assignment_opt(NF, NP, MT, F, T, ASP, ASA, Cost):-
-        /* Data in Lists */
-    findall(AId, activity(AId, _), AIds),
+    
+    /* Data in Lists */
+    findall(AId, activity(AId, _), AIdsAll),
+    length(AIdsAll,N1),
+    (NF > N1 -> fail ;
+    (NF = 0 -> N = N1, AIds = AIdsAll;
+    length(AIds,NF),
+    N = NF,
+
+    append(AIds, _, AIdsAll))),
     findall(Time, (activity(_, act(A,B)), Time is B-A), Durs),
     sum_list(Durs,D),
-    length(AIds, N),
     length(Assignments, N),
     length(Durations, N),
 
@@ -40,11 +47,15 @@ assignment_opt(NF, NP, MT, F, T, ASP, ASA, Cost):-
     First #= 1,
     symmetric(Rest, [First]),
 
+    /* Cost */
+
+
     /* Search-Solutions */
+    % bb_min(search(Assignments, 0, input_order, indomain_reverse_split, complete, [search_optimization(true)]), Cost, bb_options{strategy:dichotomic, from:0}),
     search(Assignments, 0, input_order, indomain, complete, []),
     results(AIds, Assignments, ASA),
     makeASP(ASP, ASA, Sums).
-    
+
 overlap([], [], []).
 overlap([AId|RestAids], [Var|RestVars], [Var-Duration|RestDurations]) :-
     activity(AId, act(Ab, Ae)),
@@ -96,3 +107,12 @@ sum_list([], 0).
 sum_list([Head|Tail], Sum) :-
   sum_list(Tail, TailSum),
   Sum is Head + TailSum.
+
+/* Cost predicates */
+
+rnd(Dividend, Divisor, Result) :-       /* Round Division to Nearest Integer */
+    Quotient is Dividend / Divisor,
+    Div is Dividend div Divisor,
+    Mod is Quotient - Div,
+    (Mod < 0.5 -> Result = Div;
+    Result is Div + 1).

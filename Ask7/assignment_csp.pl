@@ -52,10 +52,12 @@ assignment_opt(NF, NP, MT, F, T, ASP, ASA, Cost):-
     sum_cost(A, Sums, [], C),  % Calculate the cost based on the assignments and sums
 
     Cost #= sum(C),  % The total cost is the sum of individual costs
-    
+
+    Bound is abs(D - A*NP),
+        
     /* Search-Solutions */
     bb_min(search(Assignments, 0, most_constrained, indomain, complete, []), Cost,
-    bb_options{strategy:dichotomic,timeout:T,factor:F,from:1}),
+    bb_options{strategy:dichotomic,timeout:T,factor:F,from:Bound}),
     
     results(AIds, Assignments, ASA),
     makeASP(ASP, ASA, Sums).

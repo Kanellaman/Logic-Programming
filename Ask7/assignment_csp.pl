@@ -29,17 +29,15 @@ assignment_opt(NF, NP, MT, F, T, ASP, ASA, Cost):-
     /* Data in Lists */
     findall(AId, activity(AId, _), AIdsAll),
     length(AIdsAll,N1),
-    (NF > N1 -> fail ;
-    (NF = 0 -> N = N1, AIds = AIdsAll;
+    ( ( NF = 0; NF > N1 ) -> N = N1, AIds = AIdsAll;
     length(AIds,NF),
     N = NF,
+    append(AIds, _, AIdsAll)),
 
-    append(AIds, _, AIdsAll))),
     findall(Time, (member(AId, AIds), activity(AId, act(A,B)), Time is B-A), Durs),
     sum_list(Durs,D),
     length(Assignments, N),
     length(Durations, N),
-
     /* Constraints */
     Assignments #:: 1..NP,
     overlap(AIds, Assignments, Durations),
@@ -50,12 +48,13 @@ assignment_opt(NF, NP, MT, F, T, ASP, ASA, Cost):-
 
     /* Cost */
     rnd(D, NP, A),
-    sum_cost(A, Sums, 0, Cost),
-    Cost #>= 1,
+    sum_cost(A, Sums, [], C),
+    Cost #= sum(C),
     
     /* Search-Solutions */
-    bb_min(search(Assignments, 0, input_order, indomain, complete, []), Cost, bb_options{}),
-    % search(Assignments, 0, input_order, indomain, complete, []),
+    bb_min(search(Assignments, 0, most_constrained, indomain, complete, []), Cost,
+    bb_options{strategy:dichotomic,timeout:T,factor:F,from:1}),
+    
     results(AIds, Assignments, ASA),
     makeASP(ASP, ASA, Sums).
 
@@ -116,11 +115,12 @@ sum_list([Head|Tail], Sum) :-
 rnd(Dividend, Divisor, Result) :-       /* Round Division to Nearest Integer */
     Quotient is Dividend / Divisor,
     Div is Dividend div Divisor,
-    Mod is Quotient - Div,
-    (Mod < 0.5 -> Result = Div;
+    Decimal is Quotient - Div,
+    (Decimal < 0.5 -> Result = Div;
     Result is Div + 1).
 
 sum_cost(_, [], Cost, Cost).
 sum_cost(A, [_-W|Rest], SoFar, Cost):-
-    Sum #= SoFar + (A - W)*(A - W),
+    Temp #=  (A - W)^2,
+    append(SoFar, [Temp], Sum),
     sum_cost(A, Rest, Sum, Cost).

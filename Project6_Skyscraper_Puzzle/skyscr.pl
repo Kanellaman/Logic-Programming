@@ -1,14 +1,14 @@
 :- compile(skies).
-:- lib(ic_global).
-:- lib(ic).
-:- import alldifferent/1 from ic.
+:- lib(gfd).
+:- lib(gfd_search).
+:- import search/6 from gfd_search.
 
 skyscr(P,Solution):-
     puzzle(P,Dim,L,R,U,D,Solution),
     cross(L,R,U,D,Dim,Solution),
-    search(Solution,0,occurence,indomain,complete,[search_optimization(true)]),!.
+    search(Solution,0,most_constrained,indomain,complete,[search_optimization(true)]),!.
 
-transpose([], []).
+transpose([], []).      % Transpose a 2dimensional List
 transpose([[]|_], []).
 transpose(Matrix, [Row|Rows]) :-
     transpose(Matrix, Row, RestMatrix),
@@ -20,34 +20,33 @@ transpose([[X|Xs]|RestMatrix], [X|XValues], [Xs|RestRows]) :-
 
 constraints([],[],[],_).
 constraints([L|RestL],[R|RestR],[X|Rest],N):-
+    
+    (R\=0 -> visible(List1,X,_),    % Check visibility from the Right side
+    nvalues(List1,(#=),R);
+    true),
+
+    (L\=0 ->reverse(X,RX),    % Check visibility from the Left side
+    visible(List2,RX,_),
+    nvalues(List2,(#=),L);
+    true),
+
     alldifferent(X),
-    length(List1,N),
-    ( L \= 0 -> first(X,X1,RestX),
-    visible(List1,RestX,[X1],Sum1),
-    eval(Sum1,L);
-    true),
-
-    length(List2,N),
-    ( R \= 0 -> reverse(X,RX),
-    first(RX,RX1,RestRX),
-    visible(List2,RestRX,[RX1],Sum2),
-    eval(Sum2,R);
-    true),
-
     constraints(RestL,RestR,Rest,N).
+    
+visible([X|[]],[X|[]],[X]).     % Determine visibility
+visible([Y|RestY],[X|RestX],SoFar):-
+    visible(RestY,RestX,Max),
+    append(Max,[X],SoFar),
+    Y #= max(SoFar).        % Store the maximum value from the previous ones
 
-first([X|Rest],X,Rest).
-
-visible([],[],_,1).
-visible([Y|RestY],[X|RestX],SoFar,Sum):-
-    Y #= ( X #> max(SoFar) ),
-    append(SoFar,[X],New),
-    visible(RestY,RestX,New,PrevSum),
-    Sum #= PrevSum + Y.
-
-cross(L,R,U,D,Dim,Rows):-    % Make 2dimensional List to represent board
+cross(L,R,U,D,Dim,Rows):-    % Make 2dimensional List to represent the puzzle
     subL(Dim,Rows),
-    N is Dim - 1,
+    N is Dim,
     constraints(L,R,Rows,N),
     transpose(Rows,TRows),
     constraints(U,D,TRows,N).
+
+subL(N,[]).
+subL(N,[X|Rest]):-
+    X #:: 1..N,
+    subL(N,Rest).

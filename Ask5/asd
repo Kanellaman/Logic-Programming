@@ -1,2 +1,0 @@
-compile(main),seed(1000), maxsat(40, 120, 10, F, S, M).
-compile(main),seed(567), maxsat(50, 250, 9, F, S, M).

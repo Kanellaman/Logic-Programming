@@ -1,3 +1,4 @@
+:- compile(activities).
 assignment(NP, MT, ASP, ASA) :-
     findall(AId, activity(AId, _), AIds),
     assign(AIds, NP, ASA, MT),
